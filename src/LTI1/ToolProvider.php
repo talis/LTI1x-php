@@ -122,18 +122,17 @@ class ToolProvider {
      * @param mixed $consumerKey The identifier the tool consumer uses to access the tool provider's resources
      * @param mixed $consumerSecret The shared secret between the consumer and provider
      * @param array $params The request parameters
-     * @param null|iNonceStore $nonceStore The object which handles OAuth nonce management
+     * @param null|iNonceStore $nonceStore The object which handles OAuth nonce management, will default to MemoryNonceStore
      * @throws \InvalidArgumentException
      */
     public function __construct($consumerKey, $consumerSecret, array $params = array(), $nonceStore = null)
     {
-        $this->allParams = $params;
-        $this->processParams($params);
-        if(!isset($this->oauthParams['consumer_key']))
+        if(empty($consumerKey))
         {
             throw new \InvalidArgumentException('No consumerKey sent!');
         }
         $this->consumerKey = $consumerKey;
+
         if(empty($consumerSecret))
         {
             throw new \InvalidArgumentException('No consumerSecret sent!');
@@ -143,10 +142,19 @@ class ToolProvider {
         // Set the (very simple) MemoryNonceStore to handle nonce management if nothing is sent
         if(empty($nonceStore))
         {
-            $nonceStore = new MemoryNonceStore($consumerKey);
+            $nonceStore = $this->createMemoryNonceStore();
+        } elseif(!$nonceStore instanceof iNonceStore)
+        {
+            throw new \InvalidArgumentException('Nonce store object must implement iNonceStore!');
         }
         /** @var iNonceStore nonceStore */
         $this->nonceStore = $nonceStore;
+
+        // Save our params in their original form
+        $this->allParams = $params;
+
+        // Parse and sort the parameters into their respective attributes
+        $this->processParams($params);
     }
 
     /**
@@ -678,4 +686,14 @@ class ToolProvider {
             return '';
         }
     }
+
+    /**
+     * For mocking
+     * @return MemoryNonceStore
+     */
+    protected function createMemoryNonceStore()
+    {
+        return new \LTI1\MemoryNonceStore($this->consumerKey);
+    }
+
 }
