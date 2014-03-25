@@ -1,30 +1,130 @@
 <?php
 
+/**
+ * This class is intended to provide the functionality necessary for an LTI "tool provider".  From an LTI launch request,
+ * it will parse the passed parameters and validate the OAuth credentials.  Convenience methods are provided to get at
+ * specific aspects of the LTI launch request.
+ */
 namespace LTI1;
 
 class ToolProvider {
+    /**
+     * This property should implement the iNonceStore interface, will default to MemoryNonceStore
+     * @var iNonceStore
+     */
     protected $nonceStore;
-    protected $customParams = array();
-    protected $extParams = array();
-    protected $nonSpecParams = array();
 
+    /**
+     * Custom LTI parameters
+     * @var array
+     */
+    protected $customParams = array();
+
+    /**
+     * LTI 'ext_' parameters
+     * @var array
+     */
+    protected $extParams = array();
+
+    /**
+     * LTI 'context_' (e.g. 'course') parameters
+     * @var array
+     */
     protected $contextParams = array();
+
+    /**
+     * LTI 'launch_presentation_' parameters
+     * @var array
+     */
     protected $launchPresentationParams = array();
+
+    /**
+     * LTI LIS course section parameters
+     * @var array
+     */
     protected $lisCourseSectionParams = array();
+
+    /**
+     * LTI LIS course parameters
+     * @var array
+     */
     protected $lisCourseOfferingParams = array();
+
+    /**
+     * LTI LIS outcome parameters
+     * @var array
+     */
     protected $lisOutcomeParams = array();
+
+    /**
+     * LTI LIS person parameters
+     * @var array
+     */
     protected $lisPersonParams = array();
+
+    /**
+     * LTI lis_result_ (e.g. sourceid) parameters
+     * @var array
+     */
     protected $lisResultParams = array();
+
+    /**
+     * LTI basic (e.g. "message_type", "version") parameters
+     * @var array
+     */
     protected $ltiParams = array();
+
+    /**
+     * OAuth parameters
+     * @var array
+     */
     protected $oauthParams = array();
+
+    /**
+     * LTI resource_link_ (e.g. the actual LIS item) parameters
+     * @var array
+     */
     protected $resourceLinkParams = array();
+
+    /**
+     * The user's roles in context of this specific request
+     * @var array
+     */
     protected $roles = array();
+
+    /**
+     * LTI tool_consumer_info_ parameters
+     * @var array
+     */
     protected $toolConsumerInfoParams = array();
+
+    /**
+     * LTI tool_consumer_instance_ parameters
+     * @var array
+     */
     protected $toolConsumerInstanceParams = array();
+
+    /**
+     * LTI user_ parameters
+     * @var array
+     */
     protected $userParams = array();
 
+    /**
+     * All of the parameters passed in the request (LTI and otherwise)
+     * @var array
+     */
     protected $allParams = array();
 
+    /**
+     * Create a new LTI ToolProvider object
+     *
+     * @param mixed $consumerKey The identifier the tool consumer uses to access the tool provider's resources
+     * @param mixed $consumerSecret The shared secret between the consumer and provider
+     * @param array $params The request parameters
+     * @param null|iNonceStore $nonceStore The object which handles OAuth nonce management
+     * @throws \InvalidArgumentException
+     */
     public function __construct($consumerKey, $consumerSecret, array $params = array(), $nonceStore = null)
     {
         $this->allParams = $params;
@@ -40,15 +140,22 @@ class ToolProvider {
         }
         $this->consumerSecret = $consumerSecret;
 
-
+        // Set the (very simple) MemoryNonceStore to handle nonce management if nothing is sent
         if(empty($nonceStore))
         {
             $nonceStore = new MemoryNonceStore($consumerKey);
         }
-        /** @var NonceStore nonceStore */
+        /** @var iNonceStore nonceStore */
         $this->nonceStore = $nonceStore;
     }
 
+    /**
+     * Validate the OAuth signature and nonce; throws a RequestValidationException if invalid or returns true
+     * @param string $method HTTP request method
+     * @param string $requestUrl The scheme://host/path of the request
+     * @return bool
+     * @throws RequestValidationException
+     */
     public function validateRequest($method, $requestUrl)
     {
         if($this->generateSignature($method, $requestUrl) !== $this->oauthParams['signature'])
@@ -128,131 +235,121 @@ class ToolProvider {
     }
 
     /**
+     * Generalized getter for the various param attributes
+     * @param string $prefix
+     * @param null $key
+     * @return mixed
+     */
+    private function getParsedParams($prefix, $key = null)
+    {
+        $attributeName = $prefix . 'Params';
+        if($key)
+        {
+            if(isset($this->$prefix[$key]))
+            {
+                return $this->$prefix[$key];
+            }
+        } else {
+            return $this->$prefix;
+        }
+    }
+
+    /**
+     * Getter for the allParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key
+     * @return array
+     */
+    public function getParams($key = null)
+    {
+        if($key)
+        {
+            if(isset($this->allParams[$key]))
+            {
+                return $this->allParams[$key];
+            }
+        } else {
+            return $this->allParams;
+        }
+    }
+
+    /**
+     * Getter for the oauthParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getOauthParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->oauthParams[$key]))
-            {
-                return $this->oauthParams[$key];
-            }
-        } else {
-            return $this->oauthParams;
-        }
+        return $this->getParsedParams('oauth');
     }
 
     /**
+     * Getter for the contextParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getContextParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->contextParams[$key]))
-            {
-                return $this->contextParams[$key];
-            }
-        } else {
-            return $this->contextParams;
-        }
+        return $this->getParsedParams('context');
     }
 
     /**
+     * Getter for the customParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getCustomParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->customParams[$key]))
-            {
-                return $this->customParams[$key];
-            }
-        } else {
-            return $this->customParams;
-        }
+        return $this->getParsedParams('custom');
     }
 
     /**
+     * Getter for the extParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getExtParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->extParams[$key]))
-            {
-                return $this->extParams[$key];
-            }
-        } else {
-            return $this->extParams;
-        }
+        return $this->getParsedParams('ext');
     }
 
     /**
+     * Getter for the launchPresentationParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLaunchPresentationParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->launchPresentationParams[$key]))
-            {
-                return $this->launchPresentationParams[$key];
-            }
-        } else {
-            return $this->launchPresentationParams;
-        }
+        return $this->getParsedParams('launchPresentation');
     }
 
     /**
+     * Getter for the lisCourseOfferingParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
-    public function getListCourseOfferingParams($key = null)
+    public function getLisCourseOfferingParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->lisCourseOfferingParams[$key]))
-            {
-                return $this->lisCourseOfferingParams[$key];
-            }
-        } else {
-            return $this->lisCourseOfferingParams;
-        }
+        return $this->getParsedParams('lisCourseOffering');
     }
 
     /**
+     * Getter for the lisCourseSectionParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLisCourseSectionParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->lisCourseSectionParams[$key]))
-            {
-                return $this->lisCourseSectionParams[$key];
-            }
-        } else {
-            return $this->lisCourseSectionParams;
-        }
+        return $this->getParsedParams('lisCourseSection');
     }
 
     /**
+     * Getter for the lisOutcomeParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLisOutcomeParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->lisOutcomeParams[$key]))
-            {
-                return $this->lisOutcomeParams[$key];
-            }
-        } else {
-            return $this->lisOutcomeParams;
-        }
+        return $this->getParsedParams('lisOutcome');
     }
 
     /**
@@ -260,86 +357,44 @@ class ToolProvider {
      */
     public function getLisPersonParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->lisPersonParams[$key]))
-            {
-                return $this->lisPersonParams[$key];
-            }
-        } else {
-            return $this->lisPersonParams;
-        }
+        return $this->getParsedParams('lisPerson');
     }
 
     /**
+     * Getter for the lisResultsParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLisResultsParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->lisResultParams[$key]))
-            {
-                return $this->lisResultParams[$key];
-            }
-        } else {
-            return $this->lisResultParams;
-        }
+        return $this->getParsedParams('lisResult');
     }
 
     /**
+     * Getter for the ltiParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLtiParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->ltiParams[$key]))
-            {
-                return $this->ltiParams[$key];
-            }
-        } else {
-            return $this->ltiParams;
-        }
+        return $this->getParsedParams('lti');
     }
 
     /**
-     * @return mixed
-     */
-    public function getNonSpecParams($key = null)
-    {
-        if($key)
-        {
-            if(isset($this->nonSpecParams[$key]))
-            {
-                return $this->nonSpecParams[$key];
-            }
-        } else {
-            return $this->nonSpecParams;
-        }
-    }
-
-    /**
+     * Getter for the resourceLinkParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getResourceLinkParams($key = null)
     {
-        if($key)
-        {
-            if(isset($this->resourceLinkParams[$key]))
-            {
-                return $this->resourceLinkParams[$key];
-            }
-        } else {
-            return $this->resourceLinkParams;
-        }
+        return $this->getParsedParams('resourceLink');
     }
 
     /**
      * Generates the expected OAuth signature for the request
-     * @param $method
-     * @param $url
-     * @return string
+     * @param string $method The HTTP method of the request
+     * @param string $url The fully qualified request URL
+     * @return string The signed string
      * @throws \InvalidArgumentException
      */
     public function generateSignature($method, $url)
@@ -378,7 +433,15 @@ class ToolProvider {
 
     }
 
-    public function generateBaseString($method, $url, $params)
+    /**
+     * Generates the base string to be signed
+     *
+     * @param string $method The HTTP method of the request
+     * @param string $url The fully qualified request URL
+     * @param array $params An array of the request parameters
+     * @return string
+     */
+    public function generateBaseString($method, $url, array $params)
     {
         $baseStringParts = self::urlencode_rfc3986(array(strtoupper($method), $url, implode("&", $params)));
         return implode('&', $baseStringParts);
@@ -419,6 +482,7 @@ class ToolProvider {
     }
 
     /**
+     * Returns (in the following order, until it finds a value) lis_person_name_given, lis_person_name_family, lis_person_name_full, or lis_person_contact_email_primary
      * @return string
      */
     function getUserShortName() {
@@ -439,6 +503,7 @@ class ToolProvider {
     }
 
     /**
+     * Returns (in the following order, until it finds a value) lis_person_name_full, lis_person_name_given + lis_person_name_family, lis_person_name_given, lis_person_name_family, or lis_person_contact_email_primary
      * @return string
      */
     function getUserFullName() {
@@ -448,12 +513,19 @@ class ToolProvider {
         }
         $givenname = (isset($this->lisPersonParams['name_given']) ? $this->lisPersonParams['name_given'] : '');
         $familyname = (isset($this->lisPersonParams['name_family']) ? $this->lisPersonParams['name_family'] : '');
-        if ( strlen($familyname) > 0 and strlen($givenname) > 0 ) return $givenname + $familyname;
+        if ( strlen($familyname) > 0 and strlen($givenname) > 0 ) return $givenname . ' ' . $familyname;
         if ( strlen($givenname) > 0 ) return $givenname;
         if ( strlen($familyname) > 0 ) return $familyname;
         return $this->getUserEmail();
     }
 
+    /**
+     * Returns an opaque ID representing the user.
+     * Generated using [{tool_consumer_instance_guid}:][{oauth_consumer_key}:]user_id:{user_id}
+     * The user_id and either tool_consumer_instance_guid or oauth_consumer must exist, or it returns false
+     *
+     * @return bool|string
+     */
     function getUserKey() {
         $key = array();
         if(isset($this->userParams['id']) && !empty($this->userParams['id']))
@@ -476,6 +548,7 @@ class ToolProvider {
     }
 
     /**
+     * Constructs a gravatar URL for the user email, if user_image param isn't sent
      * @return bool|string
      */
     function getUserImage() {
@@ -492,6 +565,10 @@ class ToolProvider {
     }
 
     /**
+     * Returns an opaque ID representing the resource where the launch request originated.
+     * Generated using [{tool_consumer_instance_guid}:][{oauth_consumer_key}:]resource_link_id:{resource_link_id}
+     * The resource_link_id and either tool_consumer_instance_guid or oauth_consumer must exist, or it returns false
+     *
      * @return bool|string
      */
     function getResourceKey() {
@@ -516,6 +593,8 @@ class ToolProvider {
     }
 
     /**
+     * Convenience method to get at the resource_link_title property
+     *
      * @return bool|string
      */
     function getResourceTitle() {
@@ -527,6 +606,7 @@ class ToolProvider {
     }
 
     /**
+     * Convenience method to get at the oauth_consumer_key property
      * @return mixed
      */
     function getConsumerKey() {
@@ -534,6 +614,9 @@ class ToolProvider {
     }
 
     /**
+     * Returns an opaque ID representing the context (generally 'course').
+     * Generated using [{tool_consumer_instance_guid}:][{oauth_consumer_key}:]context_id:{context_id}
+     * The context_id and either tool_consumer_instance_guid or oauth_consumer must exist, or it returns false*
      * @return bool|string
      */
     function getCourseKey() {
@@ -558,6 +641,8 @@ class ToolProvider {
     }
 
     /**
+     * A convenience method to return a 'course' (context) name
+     * Returns (in the following order, until it finds a value) context_title, context_label, context_id, or false
      * @return bool|string
      */
     function getCourseName() {
@@ -571,14 +656,14 @@ class ToolProvider {
         }
         if(isset($this->contextParams['id']) && !empty($this->contextParams['id']))
         {
-            return $this->contextParams['title'];
+            return $this->contextParams['id'];
         }
         return false;
     }
 
     /**
      * PHP doesn't properly escape strings, so we have this
-     * @param $input
+     * @param string|array $input Input can be a string or an array of strings
      * @return array|mixed|string
      */
     public static function urlencode_rfc3986($input) {

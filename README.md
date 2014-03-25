@@ -25,9 +25,9 @@ Usage:
 
 ## TODO
 
-* Tool consumer
+* Tool consumer class
 * Handle OAuth properties passed as HTTP headers
 * Deal with 1.1 message (gradebook) returns
-
+* Handle other signature methods than HMAC_SHA1
 
 
