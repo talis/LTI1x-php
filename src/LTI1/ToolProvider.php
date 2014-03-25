@@ -403,7 +403,23 @@ class ToolProvider {
         {
             throw new \InvalidArgumentException('Invalid method sent');
         }
-        $params = $this->allParams;
+
+        $baseString = $this->generateBaseString($method, $url, $this->allParams);
+        // @todo handle other kinds of signature methods
+        return base64_encode(hash_hmac('sha1', $baseString, self::urlencode_rfc3986($this->consumerSecret)."&", true));
+
+    }
+
+    /**
+     * Generates the base string to be signed
+     *
+     * @param string $method The HTTP method of the request
+     * @param string $url The fully qualified request URL
+     * @param array $params An array of the request parameters
+     * @return string
+     */
+    public function generateBaseString($method, $url, array $params)
+    {
         unset($params['oauth_signature']);
         $keys = self::urlencode_rfc3986(array_keys($params));
         $values = self::urlencode_rfc3986(array_values($params));
@@ -426,24 +442,7 @@ class ToolProvider {
                 $pairs[] = $parameter . '=' . $value;
             }
         }
-
-        $baseString = $this->generateBaseString($method, $url, $pairs);
-        // @todo handle other kinds of signature methods
-        return base64_encode(hash_hmac('sha1', $baseString, self::urlencode_rfc3986($this->consumerSecret)."&", true));
-
-    }
-
-    /**
-     * Generates the base string to be signed
-     *
-     * @param string $method The HTTP method of the request
-     * @param string $url The fully qualified request URL
-     * @param array $params An array of the request parameters
-     * @return string
-     */
-    public function generateBaseString($method, $url, array $params)
-    {
-        $baseStringParts = self::urlencode_rfc3986(array(strtoupper($method), $url, implode("&", $params)));
+        $baseStringParts = self::urlencode_rfc3986(array(strtoupper($method), $url, implode("&", $pairs)));
         return implode('&', $baseStringParts);
     }
 
@@ -668,7 +667,7 @@ class ToolProvider {
      */
     public static function urlencode_rfc3986($input) {
         if (is_array($input)) {
-            return array_map(array('\classes\lti1\ToolProvider', 'urlencode_rfc3986'), $input);
+            return array_map(array('\LTI1\ToolProvider', 'urlencode_rfc3986'), $input);
         } else if (is_scalar($input)) {
             return str_replace(
                 '+',
