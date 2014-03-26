@@ -1,5 +1,5 @@
 {
-    "name": "talis/LTI1x-php",
+    "name": "talis/lti1x-php",
     "description": "This is a php library for IMS LTI 1.x",
     "keywords": ["lti", "php", "library"],
     "homepage": "https://github.com/talis/LTI1x-php",
