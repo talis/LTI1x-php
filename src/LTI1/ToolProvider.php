@@ -245,7 +245,7 @@ class ToolProvider {
     /**
      * Generalized getter for the various param attributes
      * @param string $prefix
-     * @param null $key
+     * @param string|null $key
      * @return mixed
      */
     private function getParsedParams($prefix, $key = null)
@@ -253,12 +253,12 @@ class ToolProvider {
         $attributeName = $prefix . 'Params';
         if($key)
         {
-            if(isset($this->$prefix[$key]))
+            if(isset($this->{$attributeName}[$key]))
             {
-                return $this->$prefix[$key];
+                return $this->{$attributeName}[$key];
             }
         } else {
-            return $this->$prefix;
+            return $this->{$attributeName};
         }
     }
 
@@ -287,7 +287,7 @@ class ToolProvider {
      */
     public function getOauthParams($key = null)
     {
-        return $this->getParsedParams('oauth');
+        return $this->getParsedParams('oauth', $key);
     }
 
     /**
@@ -297,7 +297,7 @@ class ToolProvider {
      */
     public function getContextParams($key = null)
     {
-        return $this->getParsedParams('context');
+        return $this->getParsedParams('context', $key);
     }
 
     /**
@@ -307,7 +307,7 @@ class ToolProvider {
      */
     public function getCustomParams($key = null)
     {
-        return $this->getParsedParams('custom');
+        return $this->getParsedParams('custom', $key);
     }
 
     /**
@@ -317,7 +317,7 @@ class ToolProvider {
      */
     public function getExtParams($key = null)
     {
-        return $this->getParsedParams('ext');
+        return $this->getParsedParams('ext', $key);
     }
 
     /**
@@ -327,7 +327,7 @@ class ToolProvider {
      */
     public function getLaunchPresentationParams($key = null)
     {
-        return $this->getParsedParams('launchPresentation');
+        return $this->getParsedParams('launchPresentation', $key);
     }
 
     /**
@@ -337,7 +337,7 @@ class ToolProvider {
      */
     public function getLisCourseOfferingParams($key = null)
     {
-        return $this->getParsedParams('lisCourseOffering');
+        return $this->getParsedParams('lisCourseOffering', $key);
     }
 
     /**
@@ -347,7 +347,7 @@ class ToolProvider {
      */
     public function getLisCourseSectionParams($key = null)
     {
-        return $this->getParsedParams('lisCourseSection');
+        return $this->getParsedParams('lisCourseSection', $key);
     }
 
     /**
@@ -357,25 +357,27 @@ class ToolProvider {
      */
     public function getLisOutcomeParams($key = null)
     {
-        return $this->getParsedParams('lisOutcome');
+        return $this->getParsedParams('lisOutcome', $key);
     }
 
     /**
+     * Getter for the lisPersonParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
     public function getLisPersonParams($key = null)
     {
-        return $this->getParsedParams('lisPerson');
+        return $this->getParsedParams('lisPerson', $key);
     }
 
     /**
-     * Getter for the lisResultsParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
+     * Getter for the lisResultParams attribute: returns a specific value (or null) if a key is passed, or an associate array of all key/values
      * @param string|null $key An optional key to return a specific parameter value
      * @return mixed
      */
-    public function getLisResultsParams($key = null)
+    public function getLisResultParams($key = null)
     {
-        return $this->getParsedParams('lisResult');
+        return $this->getParsedParams('lisResult', $key);
     }
 
     /**
@@ -385,7 +387,7 @@ class ToolProvider {
      */
     public function getLtiParams($key = null)
     {
-        return $this->getParsedParams('lti');
+        return $this->getParsedParams('lti', $key);
     }
 
     /**
@@ -395,7 +397,7 @@ class ToolProvider {
      */
     public function getResourceLinkParams($key = null)
     {
-        return $this->getParsedParams('resourceLink');
+        return $this->getParsedParams('resourceLink', $key);
     }
 
     /**
@@ -493,11 +495,6 @@ class ToolProvider {
      * @return string
      */
     function getUserShortName() {
-        $email = $this->getUserEmail();
-        if(!empty($email))
-        {
-            return $email;
-        }
         if(isset($this->lisPersonParams['name_given']) && !empty($this->lisPersonParams['name_given']))
         {
             return $this->lisPersonParams['name_given'];
@@ -694,6 +691,16 @@ class ToolProvider {
     protected function createMemoryNonceStore()
     {
         return new \LTI1\MemoryNonceStore($this->consumerKey);
+    }
+
+    /**
+     * Returns roles associated with request
+     *
+     * @return array
+     */
+    public function getRoles()
+    {
+        return $this->roles;
     }
 
 }
