@@ -564,7 +564,7 @@ class ToolProvider {
         $email = $this->getUserEmail();
         if ( $email === false ) return false;
         $size = 40;
-        $grav_url = "://www.gravatar.com/avatar.php?gravatar_id=".md5( strtolower($email) )."&size=".$size;
+        $grav_url = "//www.gravatar.com/avatar.php?gravatar_id=".md5( strtolower($email) )."&size=".$size;
         return $grav_url;
     }
 

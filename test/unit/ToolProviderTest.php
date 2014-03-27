@@ -401,7 +401,7 @@ class ToolProviderTest extends TestBase
         $this->assertEquals('http://example.org/1234', $provider->getUserImage());
 
         $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('lis_person_contact_email_primary'=>'jqpublic@school.edu'));
-        $this->assertEquals("://www.gravatar.com/avatar.php?gravatar_id=".md5( strtolower('jqpublic@school.edu') )."&size=40", $provider->getUserImage());
+        $this->assertEquals("//www.gravatar.com/avatar.php?gravatar_id=".md5( strtolower('jqpublic@school.edu') )."&size=40", $provider->getUserImage());
 
         $provider = new \LTI1\ToolProvider(uniqid(), uniqid());
         $this->assertFalse($provider->getUserImage());
