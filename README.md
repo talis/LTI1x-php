@@ -4,6 +4,8 @@ Intended as a simple, generic LTI 1.x library for PHP 5.3+.
 
 Usage:
 
+```php
+
     $consumerKey = $_POST['oauth_consumer_key'];
 
     $nonceStore = new \LTI1\MemoryNonceStore($consumerKey); // You wouldn't actually want to use this, I don't think
@@ -22,6 +24,7 @@ Usage:
     {
         echo("Invalid credentials/request: " . $e->message);
     }
+```
 
 ## TODO
 
