@@ -674,11 +674,7 @@ class ToolProvider {
         if (is_array($input)) {
             return array_map(array('\LTI1\ToolProvider', 'urlencode_rfc3986'), $input);
         } else if (is_scalar($input)) {
-            return str_replace(
-                '+',
-                ' ',
-                str_replace('%7E', '~', rawurlencode($input))
-            );
+            return str_replace('+',' ',str_replace('%252A', '*', str_replace('%7E', '~', rawurlencode($input))));
         } else {
             return '';
         }

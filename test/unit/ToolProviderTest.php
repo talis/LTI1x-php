@@ -438,4 +438,21 @@ class ToolProviderTest extends TestBase
         $provider = new \LTI1\ToolProvider(uniqid(), uniqid(),array());
         $this->assertFalse($provider->getCourseName());
     }
+
+    public function testGenerateBaseStringDoesNotEncodeAsterix()
+    {
+        $expectedBaseUri =
+            'POST&http%3A%2F%2Fwww.test.com%2Flti%2Flaunch&' .
+            'custom_node_code_regex%3D%255E%2528%255BA-Z0-9%255D%252B%2529_.*%2524'; // Unecoded *
+
+        $params = array(
+            'custom_node_code_regex'=>'^([A-Z0-9]+)_.*$'
+        );
+
+        $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), $params);
+
+        $baseString = $provider->generateBaseString('POST', 'http://www.test.com/lti/launch', $params);
+
+        $this->assertEquals($expectedBaseUri, $baseString);
+    }
 }
