@@ -29,6 +29,21 @@ Usage:
     }
 ```
 
+## Build
+
+Install using composer.
+
+```
+    php composer.phar install
+```
+
+Run Tests using:
+
+```
+    ./vendor/bin/phpunit test
+```
+
+
 ## TODO
 
 * Tool consumer class
