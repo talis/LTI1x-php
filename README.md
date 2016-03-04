@@ -29,6 +29,22 @@ Usage:
     }
 ```
 
+## Build
+
+Install using npm and composer
+
+```
+curl -sS https://getcomposer.org/installer | php
+npm install
+grunt composer:install
+```
+
+## Tests
+
+```
+grunt test
+```
+
 ## TODO
 
 * Tool consumer class

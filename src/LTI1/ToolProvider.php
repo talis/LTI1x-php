@@ -424,8 +424,8 @@ class ToolProvider {
      * Generates the base string to be signed
      *
      * @param string $method The HTTP method of the request
-     * @param string $url The fully qualified request URL
-     * @param array $params An array of the request parameters
+     * @param string $url    The fully qualified request URL
+     * @param array  $params An array of the request parameters
      * @return string
      */
     public function generateBaseString($method, $url, array $params)
@@ -465,6 +465,58 @@ class ToolProvider {
         foreach($this->roles as $role)
         {
             if ( ! ( strpos($role,"instructor") === false ) ) return true;
+            if ( ! ( strpos($role,"administrator") === false ) ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the requester is a TeachingAssistant
+     * @return bool
+     */
+    function isTeachingAssistant() {
+        foreach($this->roles as $role)
+        {
+            if ( ! ( strpos($role,"teachingassistant") === false ) ) return true;
+            if ( ! ( strpos($role,"administrator") === false ) ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the requester is a CourseDesigner
+     * @return bool
+     */
+    function isCourseDesigner() {
+        foreach($this->roles as $role)
+        {
+            if ( ! ( strpos($role,"coursedesigner") === false ) ) return true;
+            if ( ! ( strpos($role,"administrator") === false ) ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the requester is a Mentor
+     * @return bool
+     */
+    function isMentor() {
+        foreach($this->roles as $role)
+        {
+            if ( ! ( strpos($role,"mentor") === false ) ) return true;
+            if ( ! ( strpos($role,"administrator") === false ) ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the requester is a Manager
+     * @return bool
+     */
+    function isManager() {
+        foreach($this->roles as $role)
+        {
+            if ( ! ( strpos($role,"manager") === false ) ) return true;
             if ( ! ( strpos($role,"administrator") === false ) ) return true;
         }
         return false;
@@ -695,6 +747,7 @@ class ToolProvider {
 
     /**
      * Returns roles associated with request
+     * LTI roles are described here: http://www.imsglobal.org/specs/ltiv1p0/implementation-guide#toc-16
      *
      * @return array
      */

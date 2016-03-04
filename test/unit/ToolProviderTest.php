@@ -311,12 +311,34 @@ class ToolProviderTest extends TestBase
         $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
 
         $this->assertEquals(array(strtolower($roles)), $provider->getRoles());
-        $this->assertTrue($provider->isInstructor()); // @todo is this right?
+        $this->assertTrue($provider->isInstructor());
 
         $roles = 'urn:lti:role:ims/lis/Learner,urn:lti:role:ims/lis/Member/Member,urn:lti:role:ims/lis/Mentor/Tutor';
         $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
         $this->assertEquals(explode(',', strtolower($roles)), $provider->getRoles());
         $this->assertFalse($provider->isInstructor());
+
+        $roles = 'urn:lti:role:ims/lis/TeachingAssistant';
+        $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
+        $this->assertEquals(array(strtolower($roles)), $provider->getRoles());
+        $this->assertTrue($provider->isTeachingAssistant());
+
+        $roles = 'urn:lti:role:ims/lis/CourseDesigner';
+        $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
+        $this->assertEquals(array(strtolower($roles)), $provider->getRoles());
+        $this->assertTrue($provider->isCourseDesigner());
+
+        $roles = 'urn:lti:role:ims/lis/Manager';
+        $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
+        $this->assertEquals(array(strtolower($roles)), $provider->getRoles());
+        $this->assertTrue($provider->isManager());
+
+        $roles = 'urn:lti:role:ims/lis/Mentor';
+        $provider = new \LTI1\ToolProvider(uniqid(), uniqid(), array('roles'=>$roles));
+        $this->assertEquals(array(strtolower($roles)), $provider->getRoles());
+        $this->assertTrue($provider->isMentor());
+
+
     }
 
     public function testUserDataGetters()
