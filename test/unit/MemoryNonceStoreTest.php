@@ -27,7 +27,10 @@ class MemoryNonceStoreTest extends TestBase {
 
     public function testCheckNonceExpiresRequest()
     {
-        $store = $this->getMock('\LTI1\MemoryNonceStore', array('expireNonce'), array('fooBar'));
+        $store = $this->getMockBuilder('\LTI1\MemoryNonceStore')
+            ->setMethods(['expireNonce'])
+            ->setConstructorArgs(['fooBar'])
+            ->getMock();
         $store->expects($this->once())->method('expireNonce');
         $this->assertTrue($store->checkNonce(uniqid(), time()));
     }
