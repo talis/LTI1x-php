@@ -1,6 +1,6 @@
 <?php
 
-class TestBase extends PHPUnit_Framework_TestCase {
+class TestBase extends \PHPUnit_Framework_TestCase {
     protected function setUp()
     {
         $className = get_class($this);
