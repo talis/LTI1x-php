@@ -176,6 +176,18 @@ class ToolProvider {
     }
 
     /**
+     * Validate the params for a launch request
+     *
+     */
+    public function validateLaunchRequest(){
+        if(!isset($this->resourceLinkParams['id']) || empty($this->resourceLinkParams['id']))
+        {
+            throw new RequestValidationException("No resource_link_id sent");
+        }
+        return true;
+    }
+
+    /**
      * Parse the request params/headers and add them to the object
      *
      * @param array $params
